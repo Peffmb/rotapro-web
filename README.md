@@ -1,16 +1,45 @@
-# rotago_web
+# 🏍️ RotaGo - Gestão de Entregas em Tempo Real
 
-A new Flutter project.
+<p align="center">
+  <img src="https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white" alt="Flutter">
+  <img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase">
+  <img src="https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white" alt="Dart">
+</p>
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 📌 Sobre o Projeto
 
-A few resources to get you started if this is your first Flutter project:
+O **RotaGo** é uma solução completa de monitoramento logístico desenvolvida para ajudar lanchonetes. A ferramenta permite a gestão centralizada de entregadores, monitoramento em tempo real via mapa interativo e vinculação de dispositivos através de tokens únicos, ele será implementado em um app em flutter também que já está criado por mim e em uso, focado no motoboy do dia a dia que faz entregas privadas.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+O projeto foi construído com foco em **escalabilidade** e **performance**, utilizando o que há de mais moderno no ecossistema Flutter Web e Firebase.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🚀 Funcionalidades Principais
+
+- 🔐 **Autenticação Segura**: Sistema de login, registro e recuperação de senha via Firebase Auth.
+- 📍 **Monitoramento em Tempo Real**: Mapa interativo integrado com OpenStreetMap para rastreio de frotas.
+- 👥 **Gestão de Entregadores**: CRUD completo (Criação, Consulta e Exclusão) de colaboradores.
+- 🔑 **Sistema de Tokens**: Geração automática de chaves de vínculo para integração com o aplicativo mobile.
+- 📊 **Telemetria Simulada**: Visualização dinâmica de velocidade, bateria e status dos entregadores.
+- 🎨 **UI Customizada**: Interface adaptada para a identidade visual da marca (Vermelho/Preto).
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Framework:** [Flutter](https://flutter.dev) (Web)
+- **Backend:** [Firebase](https://firebase.google.com) (Authentication & Cloud Firestore)
+- **Mapas:** [Flutter Map](https://pub.dev/packages/flutter_map) + [OpenStreetMap](https://www.openstreetmap.org/)
+- **Gerenciamento de Estado:** StatefulWidget / Streams
+- **Estilização:** Material Design 3 (Personalizado)
+
+
+## ⚙️ Como executar o projeto
+
+1. **Pré-requisitos:**
+   - Flutter SDK instalado.
+   - Um projeto configurado no Firebase.
+
+2. **Clonar o repositório:**
+   ```bash
+   git clone [https://github.com/seu-usuario/rotago_web.git](https://github.com/seu-usuario/rotago_web.git)

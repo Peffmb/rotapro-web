@@ -13,7 +13,7 @@ class AuthService {
       );
       return result.user;
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -26,7 +26,7 @@ class AuthService {
       );
       return result.user;
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 

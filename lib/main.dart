@@ -3,21 +3,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rotago_web/screens/dashboard_screen.dart';
 import 'package:rotago_web/screens/login_screen.dart';
+import 'package:rotago_web/firebase/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // --- COLE SUAS CHAVES DO FIREBASE AQUI NOVAMENTE ---
-  await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: "AIzaSyB4rxdoOiF1lPkhXVXOGfHaY9GFb5SOYu4",
-      appId: "1:213019577977:web:5e04045936665f8e220ea8",
-      messagingSenderId: "213019577977",
-      projectId: "rotago-19a68",
-      authDomain: "rotago-19a68.firebaseapp.com",
-      storageBucket: "rotago-19a68.appspot.com",
-    ),
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.web);
 
   runApp(const RotaGoApp());
 }

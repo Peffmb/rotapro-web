@@ -8,7 +8,7 @@ import 'package:rotago_web/firebase/firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // --- COLE SUAS CHAVES DO FIREBASE AQUI NOVAMENTE ---
+  // Firebase dados
   await Firebase.initializeApp(options: DefaultFirebaseOptions.web);
 
   runApp(const RotaGoApp());
@@ -19,27 +19,57 @@ class RotaGoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Definindo a paleta de cores da Rota Lanches
+    const corPrimaria = Color(0xFFD32F2F); // Vermelho vivo
+    const corSecundaria = Colors.black; // Preto
+    const corFundo = Colors.white; // Branco
+
     return MaterialApp(
-      title: 'RotaGo',
+      title: 'RotaGo - Rota Lanches', // Atualizei o título
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.deepPurple, useMaterial3: true),
-      // O StreamBuilder é o "Porteiro"
+      theme: ThemeData(
+        // Define o Vermelho como cor principal
+        primaryColor: corPrimaria,
+        // Define o esquema de cores para componentes (botões, switches, etc.)
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: corPrimaria,
+          primary: corPrimaria,
+          secondary: corSecundaria,
+          background: corFundo,
+        ),
+        // Cor de fundo padrão das telas
+        scaffoldBackgroundColor: corFundo,
+        // Estilo da AppBar (Barra superior)
+        appBarTheme: const AppBarTheme(
+          backgroundColor: corPrimaria,
+          foregroundColor: corFundo, // Texto e ícones brancos
+          elevation: 4, // Sombra para destaque
+        ),
+        // Estilo dos Botões Elevados (como o de "Salvar")
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: corPrimaria,
+            foregroundColor: corFundo, // Texto branco
+          ),
+        ),
+        // Estilo dos Botões Flutuantes (o "+" no mapa)
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: corPrimaria,
+          foregroundColor: corFundo,
+        ),
+        useMaterial3: true,
+      ),
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-          // 1. Se estiver carregando, mostra rodinha
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(
               body: Center(child: CircularProgressIndicator()),
             );
           }
-
-          // 2. Se tiver usuário logado -> Manda para o Mapa (Dashboard)
           if (snapshot.hasData) {
             return const DashboardScreen();
           }
-
-          // 3. Se não tiver ninguém -> Manda para o Login
           return const LoginScreen();
         },
       ),

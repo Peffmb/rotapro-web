@@ -14,10 +14,23 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
 
   bool _isLoading = false;
-  bool _isLogin = true; // Se true, mostra Login. Se false, mostra Cadastro.
+  bool _isLogin = true; // Alterna entre Login e Cadastro
+  bool _senhaVisivel = false; // Para mostrar/ocultar senha
 
-  // Função que chama o AuthService
+  // Cores da marca
+  final Color _corPrimaria = const Color(0xFFD32F2F); // Vermelho Rota
+  final Color _corGradienteFim = const Color(
+    0xFFB71C1C,
+  ); // Vermelho mais escuro
+
   void _submit() async {
+    if (_emailController.text.isEmpty || _senhaController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Preencha todos os campos!")),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     String email = _emailController.text.trim();
@@ -25,85 +38,212 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       if (_isLogin) {
-        // Tentar Logar
         await _authService.login(email, senha);
       } else {
-        // Tentar Cadastrar
         await _authService.cadastro(email, senha);
       }
-      // Se der certo, não precisamos fazer nada aqui,
-      // o main.dart vai detectar a mudança e trocar de tela automaticamente.
+      // O stream no main.dart fará a troca de tela automática
     } catch (e) {
-      // Se der erro, mostra um alerta
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Erro: ${e.toString()}")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Erro: ${e.toString()}"),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      body: Center(
-        child: Card(
-          margin: const EdgeInsets.all(20),
-          elevation: 5,
-          child: Container(
-            width: 400, // Largura fixa para ficar bonito no PC
-            padding: const EdgeInsets.all(24),
+      // Fundo Gradiente Vermelho
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [_corPrimaria, _corGradienteFim],
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  _isLogin ? "RotaGo Login" : "Criar Conta RotaGo",
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: "E-mail",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _senhaController,
-                  decoration: const InputDecoration(
-                    labelText: "Senha",
-                    border: OutlineInputBorder(),
-                  ),
-                  obscureText: true,
-                ),
-                const SizedBox(height: 20),
-                _isLoading
-                    ? const CircularProgressIndicator()
-                    : SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: _submit,
-                          child: Text(_isLogin ? "ENTRAR" : "CADASTRAR"),
-                        ),
+                // Logo / Ícone do Sistema
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
                       ),
-                const SizedBox(height: 10),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _isLogin = !_isLogin; // Alterna entre Login e Cadastro
-                    });
-                  },
-                  child: Text(
-                    _isLogin
-                        ? "Não tem conta? Crie uma aqui."
-                        : "Já tem conta? Faça login.",
+                    ],
                   ),
+                  child: Icon(
+                    Icons.delivery_dining,
+                    size: 60,
+                    color: _corPrimaria,
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Texto de Boas Vindas
+                const Text(
+                  "RotaGo",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const Text(
+                  "Gestão de Entregas",
+                  style: TextStyle(fontSize: 16, color: Colors.white70),
+                ),
+                const SizedBox(height: 30),
+
+                // Card de Login
+                Card(
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Container(
+                    width: 400, // Largura máxima para Desktop
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      children: [
+                        Text(
+                          _isLogin ? "Acessar Painel" : "Criar Nova Conta",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[800],
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+
+                        // Input Email
+                        TextField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            labelText: "E-mail",
+                            prefixIcon: const Icon(Icons.email_outlined),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.grey[300]!),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Input Senha
+                        TextField(
+                          controller: _senhaController,
+                          obscureText: !_senhaVisivel,
+                          decoration: InputDecoration(
+                            labelText: "Senha",
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _senhaVisivel
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _senhaVisivel = !_senhaVisivel;
+                                });
+                              },
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.grey[300]!),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+
+                        // Botão Principal
+                        _isLoading
+                            ? CircularProgressIndicator(color: _corPrimaria)
+                            : SizedBox(
+                                width: double.infinity,
+                                height: 50,
+                                child: ElevatedButton(
+                                  onPressed: _submit,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: _corPrimaria,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    elevation: 5,
+                                  ),
+                                  child: Text(
+                                    _isLogin ? "ENTRAR" : "CADASTRAR",
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                        const SizedBox(height: 20),
+
+                        // Link alternar Login/Cadastro
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _isLogin ? "Não tem conta? " : "Já tem conta? ",
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _isLogin = !_isLogin;
+                                  _emailController.clear();
+                                  _senhaController.clear();
+                                });
+                              },
+                              child: Text(
+                                _isLogin ? "Crie agora" : "Fazer login",
+                                style: TextStyle(
+                                  color: _corPrimaria,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+                const Text(
+                  "Desenvolvido por Pedro Felipe",
+                  style: TextStyle(color: Colors.white38, fontSize: 12),
                 ),
               ],
             ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+import 'package:rotago_web/repositories/entregadores_repository.dart';
 
 class NovoEntregadorDialog extends StatefulWidget {
   const NovoEntregadorDialog({super.key});
@@ -14,8 +14,8 @@ class _NovoEntregadorDialogState extends State<NovoEntregadorDialog> {
 
   // Controladores para pegar o texto
   final _nomeController = TextEditingController();
-  final _cpfController = TextEditingController(); // Novo
-  final _telefoneController = TextEditingController(); // Novo
+  final _cpfController = TextEditingController();
+  final _telefoneController = TextEditingController();
   final _placaController = TextEditingController();
 
   bool _salvando = false;
@@ -30,7 +30,7 @@ class _NovoEntregadorDialogState extends State<NovoEntregadorDialog> {
       // Gera um token de 6 caracteres maiúsculos (ex: A1B2C3) para ser fácil digitar
       String tokenGerado = uuid.v4().substring(0, 6).toUpperCase();
 
-      await FirebaseFirestore.instance.collection('entregadores').add({
+      final data = {
         'nome': _nomeController.text.trim(),
         'cpf': _cpfController.text.trim(),
         'telefone': _telefoneController.text.trim(),
@@ -39,8 +39,11 @@ class _NovoEntregadorDialogState extends State<NovoEntregadorDialog> {
         'status': 'offline',
         // Localização inicial (Centro de Maringá)
         'localizacao_atual': {'lat': -23.420999, 'lng': -51.933056},
-        'criado_em': FieldValue.serverTimestamp(),
-      });
+        // 'criado_em' será adicionado pelo repository
+      };
+
+      // Uso do Repository para salvar
+      await EntregadoresRepository().addEntregador(data);
 
       if (mounted) {
         Navigator.of(context).pop();
@@ -53,9 +56,11 @@ class _NovoEntregadorDialogState extends State<NovoEntregadorDialog> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Erro: $e")));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Erro: $e")),
+        );
+      }
     } finally {
       if (mounted) setState(() => _salvando = false);
     }

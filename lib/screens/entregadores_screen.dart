@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
+import 'package:rotago_web/repositories/entregadores_repository.dart';
 
 class EntregadoresScreen extends StatelessWidget {
   const EntregadoresScreen({super.key});
@@ -23,25 +24,34 @@ class EntregadoresScreen extends StatelessWidget {
             ),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
             onPressed: () async {
-              // 1. Apaga do Firebase
-              await FirebaseFirestore.instance
-                  .collection('entregadores')
-                  .doc(docId)
-                  .delete();
+              try {
+                // 1. Apaga do Firebase via Repository
+                await EntregadoresRepository().deleteEntregador(docId);
 
-              // 2. Fecha o alerta
-              if (ctx.mounted) {
-                Navigator.of(ctx).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Entregador excluído com sucesso!"),
-                  ),
-                );
+                // 2. Fecha o alerta
+                if (ctx.mounted) {
+                  Navigator.of(ctx).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Entregador excluído com sucesso!"),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (ctx.mounted) {
+                  Navigator.of(ctx).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Erro ao excluir: $e")),
+                  );
+                }
               }
             },
-            child: const Text("Excluir", style: TextStyle(color: Colors.white)),
+            child: const Text("Excluir"),
           ),
         ],
       ),
@@ -50,18 +60,17 @@ class EntregadoresScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Cores locais
-    final Color corVermelho = Theme.of(context).primaryColor;
-    const Color corPreto = Colors.black;
-    const Color corBranco = Colors.white;
+    // Cores globais do tema
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    // Instância do Repository
+    final repository = EntregadoresRepository();
 
     return Scaffold(
       appBar: AppBar(title: const Text("Gerenciar Entregadores")),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('entregadores')
-            .orderBy('criado_em', descending: true)
-            .snapshots(),
+        stream: repository.getEntregadoresStream(),
         builder: (context, snapshot) {
           if (snapshot.hasError)
             return const Center(child: Text("Erro ao carregar dados."));
@@ -77,7 +86,6 @@ class EntregadoresScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             itemCount: dados.length,
             itemBuilder: (context, index) {
-              // Pegamos os dados e TAMBÉM o ID do documento para poder excluir
               final docId = dados[index].id;
               final entregador = dados[index].data() as Map<String, dynamic>;
 
@@ -92,17 +100,16 @@ class EntregadoresScreen extends StatelessWidget {
                 elevation: 3,
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: corVermelho,
+                    backgroundColor: colorScheme.primary,
                     child: Text(
-                      nome[0].toUpperCase(),
-                      style: const TextStyle(color: corBranco),
+                      nome.isNotEmpty ? nome[0].toUpperCase() : '?',
+                      style: TextStyle(color: colorScheme.onPrimary),
                     ),
                   ),
                   title: Text(
                     nome,
-                    style: const TextStyle(
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: corPreto,
                     ),
                   ),
                   subtitle: Column(
@@ -113,26 +120,24 @@ class EntregadoresScreen extends StatelessWidget {
                       const SizedBox(height: 5),
                       Container(
                         padding: const EdgeInsets.all(4),
-                        color: corPreto,
+                        color: Colors.black, // Mantendo preto para destaque do token
                         child: Text(
                           "Token: $token",
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.5,
-                            color: corBranco,
+                            color: Colors.white,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  // Usamos Row com mainAxisSize.min para colocar dois botões lado a lado
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Botão Copiar
                       IconButton(
                         icon: const Icon(Icons.copy),
-                        color: corPreto,
+                        color: Colors.black,
                         tooltip: "Copiar Token",
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: token));
@@ -141,10 +146,8 @@ class EntregadoresScreen extends StatelessWidget {
                           );
                         },
                       ),
-                      // Botão Excluir (Novo)
                       IconButton(
-                        icon: const Icon(Icons.delete),
-                        color: corVermelho,
+                        icon: Icon(Icons.delete, color: colorScheme.error),
                         tooltip: "Excluir Entregador",
                         onPressed: () =>
                             _confirmarExclusao(context, docId, nome),
